@@ -155,14 +155,21 @@ You MUST create a task for each of these items and complete them in order:
     domain-specific business events. For each additional metric, clarify:
     metric type (`counter`, `gauge`, or `histogram`), metric name, label set,
     and when the metric is recorded.
-19. **Define testing approach** - prefer traditional unit tests for
-    synchronous logic (mutate functions, validation, status aggregation). For
-    asynchronous tests where the test suite must simulate external systems
-    (e.g. setting status fields on child resources that the controller reacts
-    to), recommend envtest. Document that async tests must handle race
-    conditions between the test suite and the running controller. For
-    existing-controller changes, identify regression coverage needed for
-    pre-existing behavior that must remain unchanged.
+19. **Define testing approach** - explore the existing test suite in the
+    codebase to understand the project's established testing patterns,
+    including the balance between unit tests and envtest, test helper
+    utilities, assertion styles, and test organization. The existing tests are
+    the primary guide for testing strategy - do not introduce a new testing
+    framework or shift the unit-test-vs-envtest balance unless the user
+    explicitly requests it. Within the established patterns: prefer
+    traditional unit tests for synchronous logic (mutate functions,
+    validation, status aggregation); use envtest for asynchronous scenarios
+    where the test suite must simulate external systems (e.g. setting status
+    fields on child resources that the controller reacts to) only if the
+    project already uses envtest for similar cases. Document that async tests
+    must handle race conditions between the test suite and the running
+    controller. For existing-controller changes, identify regression coverage
+    needed for pre-existing behavior that must remain unchanged.
 20. **Define out of scope** - propose 3-5 features or behaviors that are
     related to the controller but not part of this spec. Propose items that a
     coding agent might reasonably infer or add on its own, such as: handling
