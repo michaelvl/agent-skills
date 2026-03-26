@@ -143,7 +143,8 @@ You MUST create a task for each of these items and complete them in order:
     Document the chosen strategy in the spec. If production usage applies,
     interview for conversion semantics (field mappings, defaults, renamed
     fields, type conversions, and any lossy conversions) so the conversion
-    logic is captured in the spec.
+    logic is captured in the spec. In mode (c), skip this item unless the spec
+    explicitly introduces CRD changes beyond documenting current behavior.
 18. **Define metrics** - use project conventions from AGENTS.md if available;
     otherwise investigate codebase for existing Prometheus/OpenMetrics naming
     patterns, then recommend the default metrics from the
@@ -175,9 +176,11 @@ You MUST create a task for each of these items and complete them in order:
     coding agent might reasonably infer or add on its own, such as: handling
     additional resource types, supporting extra configuration options, advanced
     error recovery, or integration with systems not discussed during the
-    interview. Present the proposals to the user and let them confirm, modify,
-    or extend the list. Use the confirmed list in the spec's `Out of Scope`
-    section.
+    interview. Present the proposals as: "For the out-of-scope section, I'd
+    like to propose these items:" followed by a numbered list. Then ask whether
+    the user wants to: (1) confirm the list, (2) modify the list, or
+    (3) provide their own list in free-form text. Use the confirmed list in the
+    spec's `Out of Scope` section.
 21. **Identify deployment artifact updates** - search the codebase for Helm
     charts, Kustomize overlays, or other deployment manifests. If the
     controller introduces or modifies CRDs, check whether CRD YAML must be
@@ -186,7 +189,10 @@ You MUST create a task for each of these items and complete them in order:
     ClusterRoles in deployment manifests need updating. Document all required
     deployment artifact changes in the spec.
 22. **Write the spec** - use the template from
-    [references/SPEC-TEMPLATE.md](references/SPEC-TEMPLATE.md).
+    [references/SPEC-TEMPLATE.md](references/SPEC-TEMPLATE.md). Apply the
+    template's conditional include/omit guidance based on mode (a), (b), or (c)
+    so change-only sections are omitted for pure documentation/consolidation
+    specs.
 23. **Ask user for output destination** - save as file, submit as GitHub issue,
     or both.
 24. **Save/submit the spec** - deliver according to user's choice:

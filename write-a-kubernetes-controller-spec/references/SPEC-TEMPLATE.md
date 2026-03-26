@@ -1,6 +1,10 @@
 # [Controller Name] Specification
 
-## Change Context
+## Spec Context
+
+_For documentation/consolidation of an existing implementation (mode c), use a
+brief paragraph stating that this document captures current behavior from the
+implementation/docs and does not introduce a new change._
 
 State whether this spec is for:
 
@@ -12,10 +16,14 @@ If this is an extension or documentation/consolidation effort, identify the
 existing controller and summarize the baseline behavior that already exists
 today.
 
-### Baseline and Delta (Extensions and Documentation)
+### Baseline and Delta
 
-_Include this subsection when extending an existing controller or documenting
-an existing implementation with partial specs/docs._
+_Include this subsection when extending an existing controller, or when
+documenting an existing implementation with an intended delta from current
+behavior._
+
+_Omit this subsection for documentation/consolidation of an existing
+implementation where no intended delta is being introduced._
 
 - **Baseline behavior:** What the controller currently does (resources,
   reconcile flow, status, triggers, metrics/events)
@@ -40,6 +48,9 @@ High-level description of the controller and its purpose.
 ## Backward Compatibility
 
 _Include this section whenever the spec changes CRDs (new CRDs or CRD schema/version changes)._
+
+_Omit this section for documentation/consolidation of an existing
+implementation (mode c) when no CRD changes are being introduced._
 
 State which compatibility strategy applies and why:
 
@@ -309,7 +320,9 @@ distribution, or domain-specific business events.
 _Include this section if the project uses Helm charts, Kustomize, or other
 deployment packaging._
 
-List deployment manifests that must be updated as part of this change:
+List deployment manifests that require updates for this spec. For
+documentation/consolidation mode, state whether no deployment artifact changes
+are required.
 
 | Artifact | Location | Required Update |
 |----------|----------|-----------------|
