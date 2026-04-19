@@ -37,6 +37,11 @@ components.>
 
 <Login/callback/logout behavior and boundaries between browser and backend.>
 
+The BFF MUST accept the ID token `aud` claim as either a JSON string or a JSON
+array of strings (both are valid per OIDC Core Section 2). Audience validation
+MUST check whether the configured client ID is contained in the parsed audience
+list.
+
 ### Session model
 
 <Cookie properties, session lifecycle, refresh behavior.>

@@ -133,6 +133,10 @@ otherwise:
 - SPA frontend with single-origin deployment behind the BFF.
 - BFF performs OIDC confidential-client flow; browser does not store tokens.
 - BFF requests OIDC scopes `openid email profile` by default.
+- BFF MUST accept the ID token `aud` claim as either a JSON string or a JSON
+  array of strings (both are valid per OIDC Core Section 2); audience validation
+  MUST check whether the configured client ID is contained in the parsed
+  audience list.
 - `sub` is the canonical subject identifier for authorization and ownership
   checks; `email` is for contact/display only and must not be used as the
   primary authorization key.
