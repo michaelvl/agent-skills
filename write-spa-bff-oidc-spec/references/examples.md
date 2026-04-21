@@ -89,3 +89,34 @@ acts as aggregation proxy, single Go binary, minimal frontend.
 Read-write app, authenticated, no real-time, PostgreSQL for API data,
 relational domain model with constraint enforcement, single Go binary,
 framework-based frontend.
+
+---
+
+## Example 4: Task Management App (read-write, hierarchical data, continuous metrics, SSE)
+
+### Initial prompt
+
+> I want to build a task management app where work is tracked through continuous
+> progress metrics rather than discrete states. Users periodically update
+> progress (0-100%) and completion likelihood (0-100%) on tasks. These metrics
+> aggregate upward through a hierarchy, giving visibility at every level.
+
+### Interview answers
+
+| Topic | Answer |
+|-------|--------|
+| Users and workflows | All logged-in users are equal — no roles or permissions beyond authentication. Any user can create, edit, and delete any entity. |
+| Domain model | Four-level hierarchy: Project → Sprint → Epic → Task. Sprint has startDate and endDate (endDate must be after startDate). Task has title, progress (0–100%), completionLikelihood (0–100%), and position (manual order within an epic). Metrics aggregate upward: epic averages from tasks, sprint from epics, project from sprints. Deleting a parent cascades to all children. |
+| API capabilities | Full CRUD at every level. Tasks within an epic can be manually reordered (persisted position). No search or filter API. |
+| Real-time needs | Yes — changes should appear immediately across open browser tabs. SSE preferred (notifications are thin; clients re-fetch on event). |
+| Auth | Yes, login required. No user-scoped ownership — all users share all data. |
+| Frontend | React with TypeScript. The hierarchical UI and inline editing benefit from a component model. |
+| Backend language | Go. |
+| API data persistence | In-memory. This is a learning and reference project; durability is not required. |
+
+### Resulting spec profile
+
+Read-write app, authenticated but no per-user ownership (shared data model),
+SSE real-time change notifications, in-memory API data store, four-level
+hierarchical domain with upward metric aggregation, single Go binary,
+React/TypeScript frontend.

@@ -165,6 +165,16 @@ API layer by reusing its `RemoteKeySet` and `NewVerifier` — the validation pat
 is identical to ID token verification. This is a well-understood pattern despite
 being slightly off the library's primary design target.
 
+The `aud` claim in access tokens is not guaranteed by the OIDC spec and its
+value varies across IdPs. To handle this portably, the API reads an
+`ACCESS_TOKEN_AUD` environment variable at startup. If set, `aud` is validated
+strictly against that value. If unset, `aud` validation is skipped. This keeps
+the application portable across IdPs while still enforcing audience validation
+in deployments where the IdP is correctly configured. The expected value is
+typically a URI identifying the API (for example `https://api.example.com`),
+configured at the IdP via resource indicator (RFC 8707) or an IdP-specific
+mechanism.
+
 ## Why not use the ID token for API authorization?
 
 The OIDC spec explicitly prohibits forwarding the ID token as an API

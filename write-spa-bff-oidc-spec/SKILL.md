@@ -168,13 +168,23 @@ otherwise:
   token, the BFF MUST request the `offline_access` scope in addition to
   `openid email profile`.
 - The API layer MUST validate the JWT access token on every request: verify the
-  signature using the IdP's JWKS, and validate `iss` and `exp` claims. The `aud`
-  claim MUST be validated if present; the expected value must be defined in the
-  spec and the IdP configured to include it — this may require a resource
-  indicator (RFC 8707) depending on the IdP. The `sub` claim from the validated
-  token is the canonical authorization identity at the API layer. A
-  well-established library (for example `coreos/go-oidc` for Go) MUST be used;
-  self-implemented JWT validation is prohibited.
+  signature using the IdP's JWKS, and validate `iss` and `exp` claims. The `sub`
+  claim from the validated token is the canonical authorization identity at the
+  API layer. A well-established library (for example `coreos/go-oidc` for Go)
+  MUST be used; self-implemented JWT validation is prohibited.
+- Access token `aud` validation is IdP-dependent and must be handled
+  pragmatically. The spec must define the expected audience value and capture it
+  as the `ACCESS_TOKEN_AUD` environment variable. Validation behaviour is:
+  - If `ACCESS_TOKEN_AUD` is set: validate that the `aud` claim in the access
+    token contains that value. Reject tokens that do not match.
+  - If `ACCESS_TOKEN_AUD` is unset: skip `aud` validation. This accommodates
+    IdPs that do not support resource indicators (RFC 8707) or do not include a
+    meaningful `aud` claim in access tokens.
+  - The spec must note that the IdP must be configured to issue access tokens
+    with the expected audience value, either via resource indicator (RFC 8707)
+    or IdP-specific audience configuration (for example Auth0's `audience`
+    parameter). If the IdP does not support this, `ACCESS_TOKEN_AUD` should be
+    left unset and the operator must accept that `aud` is not validated.
 - For docker-compose local testing with auth enabled, include the test-only IdP
   from `https://github.com/michaelvl/oidc-oauth2-workshop` as the default local
   identity provider.
