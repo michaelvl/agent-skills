@@ -42,11 +42,21 @@ You MUST create a task for each item and complete them in order.
 9. **If authenticated, clarify account-menu UX requirement** - ask whether the
    app should show a top-right user avatar that opens a submenu with `Logout`
    and `Profile`; if `Profile` is enabled, specify it displays OIDC user info
-   (claims) obtained from the IdP.
+   (claims) obtained from the IdP. Clarify that `Logout` must terminate both
+   the local BFF session and the IdP SSO session via the `end_session_endpoint`
+   redirect, so the user is fully signed out rather than just losing their
+   local cookie.
 10. **Frontend choice** - recommend framework/tooling based on use case.
 11. **Backend language choice** - recommend 2-4 options; include Go when valid.
 12. **Architecture shape** - default to single backend deployment with logical
-    boundaries (CDN, BFF, API, real-time hub).
+    boundaries (CDN, BFF, API, real-time hub). Even within a single deployable,
+    the BFF and API MUST be treated as logically separate components with a
+    defined token-based interface between them: the BFF retrieves the access
+    token from the server-side session, refreshes it silently if near expiry
+    using the stored refresh token, and forwards it to the API as a Bearer
+    token. The API validates the token independently and MUST NOT rely on
+    session state. This enforces the correct authorization boundary and
+    preserves a clean path to future service extraction.
 13. **Deployment evolution** - explain default single-container deployment,
      ask whether frontend and backend release cadence are tightly coupled, and
      capture whether externalized CDN should be documented as a future option.
@@ -94,8 +104,9 @@ explain the rationale, then proceed):
   X-Frame-Options.
 - Exceptional-condition baseline: fail closed, require rollback on partial
   failures, and return sanitized error responses.
-- Security logging baseline: log failed login, session creation/destruction,
-  CSRF failures, and authorization failures.
+- Security logging baseline: log successful authentication (session established
+  after OIDC callback), session destruction (logout), failed authentication
+  attempts, CSRF failures, and authorization failures.
 
 ### Authz complexity signals
 
@@ -146,6 +157,24 @@ otherwise:
   notifications when real-time updates are needed.
 - Single backend deployable with clear internal component boundaries so future
   service extraction remains a refactor.
+- Access token format assumption: specs produced by this skill assume the IdP
+  issues JWT access tokens. This enables local token validation at the API
+  layer using the IdP's JWKS endpoint without a round-trip per request. If the
+  IdP issues opaque access tokens, token introspection (RFC 7662) is required
+  instead; this path is out of scope and must be flagged explicitly in the spec.
+- BFF MUST store the access token and refresh token in the server-side session.
+  Before forwarding the access token to the API, the BFF MUST check token expiry
+  and silently refresh using the refresh token if needed. To obtain a refresh
+  token, the BFF MUST request the `offline_access` scope in addition to
+  `openid email profile`.
+- The API layer MUST validate the JWT access token on every request: verify the
+  signature using the IdP's JWKS, and validate `iss` and `exp` claims. The `aud`
+  claim MUST be validated if present; the expected value must be defined in the
+  spec and the IdP configured to include it — this may require a resource
+  indicator (RFC 8707) depending on the IdP. The `sub` claim from the validated
+  token is the canonical authorization identity at the API layer. A
+  well-established library (for example `coreos/go-oidc` for Go) MUST be used;
+  self-implemented JWT validation is prohibited.
 - For docker-compose local testing with auth enabled, include the test-only IdP
   from `https://github.com/michaelvl/oidc-oauth2-workshop` as the default local
   identity provider.

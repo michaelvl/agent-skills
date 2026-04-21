@@ -99,6 +99,13 @@ A single deployable keeps operational overhead low for v1. Defining explicit
 logical boundaries (CDN, BFF, API, real-time hub) preserves a clean path to
 future service extraction without rewriting core logic.
 
+Defining these boundaries also has a direct security consequence: the BFF→API
+interface must use the access token as the authorization credential, not session
+state. The BFF retrieves the access token from its session store and forwards it
+as a Bearer token; the API validates it independently. Collapsing these concerns
+into shared session checks removes the API's ability to authorize requests
+independently and makes future extraction very difficult.
+
 ## Why discuss API data persistence as a product decision?
 
 Unlike session storage, API data persistence directly affects domain features:
@@ -141,3 +148,27 @@ local auth testing fast and repeatable.
 
 This IdP is for local/testing only and must be explicitly marked as out of
 scope for production deployments.
+
+## Why assume JWT access tokens and validate at the API layer?
+
+The OIDC spec does not mandate access token format. However, JWT access tokens
+enable stateless local validation at the API layer using the IdP's published
+JWKS, avoiding a network round-trip to the IdP per request. This is the common
+path for modern OIDC providers and the one this skill targets.
+
+If the IdP issues opaque access tokens, the API must call the token introspection
+endpoint (RFC 7662) per request. This is out of scope for this skill and must be
+explicitly flagged in specs where the access token format is unknown or opaque.
+
+The `coreos/go-oidc` library can be used to validate JWT access tokens at the
+API layer by reusing its `RemoteKeySet` and `NewVerifier` — the validation path
+is identical to ID token verification. This is a well-understood pattern despite
+being slightly off the library's primary design target.
+
+## Why not use the ID token for API authorization?
+
+The OIDC spec explicitly prohibits forwarding the ID token as an API
+authorization credential. The ID token is a one-time authentication assertion
+for the client (BFF) to verify the login event — it is not a bearer credential
+for ongoing API access. Using it as one violates the spec and conflates
+authentication with authorization.
